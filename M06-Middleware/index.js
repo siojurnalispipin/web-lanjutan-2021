@@ -6,22 +6,36 @@ var bodyParser = require("body-parser");
 var logger = require("morgan");
 
 //Module morgan merupakan modul untuk logger yang berfungsi untuk pencatatan tiap request ke server. Pencatatan ini atau istilahnya logging akan ditunjukkan di console terminal.
+//Middleware package
 app.use(logger("dev"));
 
+//Middleware cek nim
+const myMiddleware = (req, res, next) => {
+  if (req.params.nim === "123") {
+    console.log("Nim terverifikasi");
+    next();
+  } else {
+    const err = {
+      status: "error",
+      data: {
+        nim: req.params.nim,
+      },
+    };
+    next(err);
+  }
+};
+
 //route dengan method get
-app.get("/api/:nim/:nama", function (req, res) {
+app.get("/api/:nim/:nama", myMiddleware, function (req, res) {
   res.statusCode = 200;
   //content-type pada expressjs
   res.setHeader("Content-Type", "text/plain");
   res.send(req.params);
 });
 
-app.get("/api/cari", function (req, res, next) {
-  var nama = req.query.nama;
-  console.log(`nama : ${nama}`);
-  var umur = req.query.umur;
-  console.log(`umur : ${umur}`);
-  res.send(umur);
+//ErrorHandling
+app.use((error, req, res, next) => {
+  res.send(error);
 });
 
 app.listen(4000, function () {
